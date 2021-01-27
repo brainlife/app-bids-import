@@ -11,6 +11,10 @@ set -x
 project=$(jq -r .project config.json)
 sessionid=$(jq -r .sessionid config.json)
 
+if [ ! -z $BLHOST ]; then
+    export SINGULARITYENV_BLHOST=$BLHOST
+fi
+
 singularity exec -e \
   -B $EZBIDS \
   -B `pwd`/.jwt:$HOME/.config/brainlife.io/.jwt \
