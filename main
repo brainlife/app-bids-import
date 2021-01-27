@@ -1,11 +1,15 @@
 #!/bin/bash
 
-project=$(jq -r .project config.json)
-sessionid=$(jq -r .sessionid config.json)
+set -e
 
 #TODO I need to inject user .jwt so command line can upload data.. is there a better way?
 jwt=$(jq -r .jwt config.json)
 echo $jwt > .jwt
 
-singularity exec -e -B `pwd`/.jwt:$HOME/.config/brainlife.io/.jwt docker://brainlife/cli \
+set -x
+
+project=$(jq -r .project config.json)
+sessionid=$(jq -r .sessionid config.json)
+
+singularity exec -e -B $EZBIDS -B `pwd`/.jwt:$HOME/.config/brainlife.io/.jwt docker://brainlife/cli \
   bl bids upload -p $project $EZBIDS/$sessionid/bids
