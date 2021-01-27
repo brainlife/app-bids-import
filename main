@@ -12,11 +12,12 @@ project=$(jq -r .project config.json)
 sessionid=$(jq -r .sessionid config.json)
 
 if [ ! -z $BLHOST ]; then
-    export SINGULARITYENV_BLHOST=$BLHOST
+  export SINGULARITYENV_BLHOST=$BLHOST
+else
+  BLHOST=brainlife.io
 fi
 
 singularity exec -e \
   -B $EZBIDS \
-  -B `pwd`/.jwt:$HOME/.config/brainlife.io/.jwt \
-  docker://brainlife/cli \
+  -B `pwd`/.jwt:$HOME/.config/$BLHOST/.jwt docker://brainlife/cli \
     bl bids upload -p $project $EZBIDS/$sessionid/bids
