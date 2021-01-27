@@ -21,3 +21,5 @@ singularity exec -e \
   -B $EZBIDS \
   -B `pwd`/.jwt:$HOME/.config/$BLHOST/.jwt docker://brainlife/cli \
     bl bids upload -p $project $EZBIDS/$sessionid/bids
+
+exit 1
