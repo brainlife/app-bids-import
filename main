@@ -1,24 +1,25 @@
 #!/bin/bash
 
-set -e
-
 #TODO I need to inject user .jwt so command line can upload data.. is there a better way?
 jwt=$(jq -r .jwt config.json)
 echo -n $jwt > .jwt
 
 set -x
+set -e
 
 project=$(jq -r .project config.json)
 sessionid=$(jq -r .sessionid config.json)
 
+#for debugging
 if [ ! -z $BLHOST ]; then
   export SINGULARITYENV_BLHOST=$BLHOST
 else
   BLHOST=brainlife.io
 fi
 
+#TODO - if bl bids upload fails (with non-0 exit code, the singularity doesn't return proper exist code)
 singularity exec -e \
   -B $EZBIDS \
-  -B `pwd`/.jwt:$HOME/.config/$BLHOST/.jwt docker://brainlife/cli exit 1
-#bl bids upload -p $project $EZBIDS/$sessionid/bids
-
+  -B `pwd`/.jwt:$HOME/.config/$BLHOST/.jwt docker://brainlife/cli bl bids upload -p $project $EZBIDS/$sessionid/bids
+ret=$?
+echo "singularity exited with $ret"
