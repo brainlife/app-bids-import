@@ -19,7 +19,7 @@ fi
 
 root=$EZBIDS/$sessionid/bids
 if [ ! -f $root/dataset_description.json ]; then
-	root=$root/*
+	root=$root/$(ls -rt $root | tail -1)
 	echo "using subdirectory on $root"
 fi
 
