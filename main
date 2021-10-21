@@ -12,15 +12,18 @@ sessionid=$(jq -r .sessionid config.json)
 
 #for debugging
 if [ ! -z $BLHOST ]; then
-  export SINGULARITYENV_BLHOST=$BLHOST
+    #debug
+    export SINGULARITYENV_BLHOST=$BLHOST
+    export EZBIDS=/mnt/ezbids/workdir
 else
-  BLHOST=brainlife.io
+    #production
+    BLHOST=brainlife.io
 fi
 
 root=$EZBIDS/$sessionid/bids
 if [ ! -f $root/dataset_description.json ]; then
-	root=$root/$(ls -rt $root | tail -1)
-	echo "using subdirectory on $root"
+    root=$root/$(ls -rt $root | tail -1)
+    echo "using subdirectory on $root"
 fi
 
 #TODO - if bl bids upload fails (with non-0 exit code, the singularity doesn't return proper exist code)
