@@ -29,6 +29,6 @@ fi
 #TODO - if bl bids upload fails (with non-0 exit code, the singularity doesn't return proper exist code)
 singularity exec -e \
   -B $EZBIDS \
-  -B `pwd`/.jwt:$HOME/.config/$BLHOST/.jwt docker://brainlife/cli:1.5.34 bl bids upload -p $project $root
+  -B `pwd`/.jwt:$HOME/.config/$BLHOST/.jwt docker://brainlife/cli:1.5.35 bl bids upload -p $project $root
 #ret=$?
 #echo "singularity exited with $ret"
