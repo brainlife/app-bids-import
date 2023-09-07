@@ -14,7 +14,7 @@ sessionid=$(jq -r .sessionid config.json)
 if [ ! -z $BLHOST ]; then
     #debug
     export SINGULARITYENV_BLHOST=$BLHOST
-    export EZBIDS=/mnt/ezbids/workdir
+    export EZBIDS="${EZBIDS:-/mnt/ezbids/workdir}"
 else
     #production
     BLHOST=brainlife.io
