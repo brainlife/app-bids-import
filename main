@@ -1,24 +1,24 @@
 #!/bin/bash
 
-#TODO I need to inject user .jwt so command line can upload data.. is there a better way?
-jwt=$(jq -r .jwt config.json)
-echo -n $jwt > .jwt
-
-set -x
 set -e
 
 project=$(jq -r .project config.json)
 sessionid=$(jq -r .sessionid config.json)
 
+#the user's token reaches bl through the environment (BL_TOKEN); it is not written to disk
+#(exported before set -x so it is not printed)
+export SINGULARITYENV_BL_TOKEN=$(jq -r .jwt config.json)
+
 #for debugging
 if [ ! -z $BLHOST ]; then
     #debug
-    export SINGULARITYENV_BLHOST=$BLHOST
     export EZBIDS="${EZBIDS:-/mnt/ezbids/workdir}"
 else
     #production
     BLHOST=brainlife.io
 fi
+
+set -x
 
 root=$EZBIDS/$sessionid/bids
 if [ ! -f $root/dataset_description.json ]; then
@@ -26,11 +26,19 @@ if [ ! -f $root/dataset_description.json ]; then
     echo "using subdirectory on $root"
 fi
 
-BL_SINGULARITY_CLI_IMAGE="${BL_SINGULARITY_CLI_IMAGE:-docker://brainlife/cli:1.5.41}"
+#bl bids upload from pybrainlife (the Python CLI; the Node CLI image brainlife/cli is no longer used).
+#pybrainlife is pip-installed into this task's folder on each run: pin it with PYBRAINLIFE_REF
+#(a tag, branch or commit of github.com/brainlife/pybrainlife)
+BL_SINGULARITY_PYTHON_IMAGE="${BL_SINGULARITY_PYTHON_IMAGE:-docker://python:3.11-slim}"
+PYBRAINLIFE_REF="${PYBRAINLIFE_REF:-master}"
 
-#TODO - if bl bids upload fails (with non-0 exit code, the singularity doesn't return proper exit code)
 singularity exec -e \
   -B $EZBIDS \
-  -B `pwd`/.jwt:$HOME/.config/${BLHOST%%:*}/.jwt $BL_SINGULARITY_CLI_IMAGE bl bids upload -p $project "$root"
-
-
+  -B `pwd`:/task \
+  $BL_SINGULARITY_PYTHON_IMAGE bash -c '
+    set -e
+    pip install --quiet --disable-pip-version-check --no-cache-dir --target /task/pybrainlife \
+        "https://github.com/brainlife/pybrainlife/archive/$0.zip"
+    PYTHONPATH=/task/pybrainlife python -c "import sys; sys.argv[0] = \"bl\"; from brainlife.cli.__main__ import main; main()" \
+        -H "$1" bids upload -p "$2" "$3"
+  ' "$PYBRAINLIFE_REF" "$BLHOST" "$project" "$root"
