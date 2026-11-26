@@ -27,10 +27,11 @@ if [ ! -f $root/dataset_description.json ]; then
 fi
 
 #bl bids upload from pybrainlife (the Python CLI; the Node CLI image brainlife/cli is no longer used).
-#pybrainlife is pip-installed into this task's folder on each run: pin it with PYBRAINLIFE_REF
-#(a tag, branch or commit of github.com/brainlife/pybrainlife)
+#pybrainlife is pip-installed into this task's folder on each run, at a pinned commit so an import
+#never picks up unreviewed changes; override with PYBRAINLIFE_REF (a tag, branch or commit of
+#github.com/brainlife/pybrainlife). Move the pin to a release tag once pybrainlife publishes one.
 BL_SINGULARITY_PYTHON_IMAGE="${BL_SINGULARITY_PYTHON_IMAGE:-docker://python:3.11-slim}"
-PYBRAINLIFE_REF="${PYBRAINLIFE_REF:-master}"
+PYBRAINLIFE_REF="${PYBRAINLIFE_REF:-2bfe782e3b2ab1842f16beec9d53086128f6ee51}"
 
 singularity exec -e \
   -B $EZBIDS \
